@@ -1,4 +1,4 @@
-# Milestone 02 — Sections 1 & 2
+# Milestone 02 — Sections 1 & 2 documentation
 ## Is Pakistan's Export Sector Delivering Broad-Based Economic Benefit?
 
 ---
