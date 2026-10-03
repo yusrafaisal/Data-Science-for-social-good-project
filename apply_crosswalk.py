@@ -47,7 +47,7 @@ def main():
 
     df_final = df[df["sector"] != "Exclude"].copy()
 
-    # Quick sanity summary: value share by sector, per fiscal year
+    # Quick sanity summary: value and quantity by sector, per fiscal year
     summary = (
         df_final.groupby(["fiscal_year", "sector"])["value_pkr_thousands"]
         .sum()
@@ -55,6 +55,14 @@ def main():
     )
     print("\nExport value (PKR thousands) by sector and fiscal year:")
     print(summary)
+
+    qty_summary = (
+        df_final.groupby(["fiscal_year", "sector"])["quantity"]
+        .sum()
+        .unstack(fill_value=0)
+    )
+    print("\nExport quantity by sector and fiscal year:")
+    print(qty_summary)
 
     df_final.to_csv("combined_exports_with_sector.csv", index=False)
     print("\nSaved to combined_exports_with_sector.csv")

@@ -20,8 +20,10 @@ Columns in output:
     export_usd_thousands    -- export value in USD thousands (PKR / rate)
     employment_share        -- sector-level % of employed persons (LFS)
                               (only populated for 2018-19 and 2020-21)
+    quantity                -- physical export quantity (from PBS)
     export_pkr_lag          -- previous fiscal year's PKR value (same code)
     export_usd_lag          -- previous fiscal year's USD value (same code)
+    export_qty_lag          -- previous fiscal year's quantity (same code)
     export_pkr_growth_pct   -- YoY PKR growth %
     export_usd_growth_pct   -- YoY USD growth %
     year_index              -- numeric year index (2018-19=0 ... 2023-24=5)
@@ -72,12 +74,15 @@ df["export_usd_thousands"] = (
 # ── 3. Add employment share (sector-level, LFS data points only) ─────────────
 print("Adding employment shares...")
 employment = pd.DataFrame([
-    {"fiscal_year": "2018-19", "sector": "Agriculture",   "employment_share": 38.1},
-    {"fiscal_year": "2018-19", "sector": "Manufacturing", "employment_share": 15.1},
+    {"fiscal_year": "2018-19", "sector": "Agriculture",   "employment_share": 39.2},
+    {"fiscal_year": "2018-19", "sector": "Manufacturing", "employment_share": 15.0},
     {"fiscal_year": "2018-19", "sector": "Mining",        "employment_share": 0.3},
     {"fiscal_year": "2020-21", "sector": "Agriculture",   "employment_share": 36.9},
     {"fiscal_year": "2020-21", "sector": "Manufacturing", "employment_share": 14.9},
     {"fiscal_year": "2020-21", "sector": "Mining",        "employment_share": 0.3},
+    # 2024-25 LFS values (Agriculture 33.1%, Manufacturing 14.8%) are used
+    # for H3 trend analysis only -- beyond current dataset scope (ends 2023-24)
+    # so not included in this merge. Add when Week 14 extension data is loaded.
 ])
 df = df.merge(employment, on=["fiscal_year", "sector"], how="left")
 
@@ -94,6 +99,7 @@ df = df.sort_values(["hs_code", "year_index"]).reset_index(drop=True)
 
 df["export_pkr_lag"] = df.groupby("hs_code")["export_pkr_thousands"].shift(1)
 df["export_usd_lag"] = df.groupby("hs_code")["export_usd_thousands"].shift(1)
+df["export_qty_lag"] = df.groupby("hs_code")["quantity"].shift(1)
 
 # Growth rate: only meaningful when lag > 0 (avoid division by zero)
 def safe_growth(current, lag):
@@ -115,8 +121,8 @@ df["export_usd_growth_pct"] = safe_growth(
 final_cols = [
     "hs_code", "hs_chapter", "commodity_raw", "sector", "fiscal_year",
     "year_index", "export_pkr_thousands", "avg_usd_rate",
-    "export_usd_thousands", "employment_share",
-    "export_pkr_lag", "export_usd_lag",
+    "export_usd_thousands", "quantity", "employment_share",
+    "export_pkr_lag", "export_usd_lag", "export_qty_lag",
     "export_pkr_growth_pct", "export_usd_growth_pct",
     "is_zero_export",
 ]
